@@ -27,7 +27,7 @@ public class Connection {
         }
 
         discord.addEventListener(new mcmessages());
-        discord.addEventListener(new Coms());
+        discord.addEventListener(new Commands());
     }
 
 
@@ -45,7 +45,6 @@ public class Connection {
         try {
             db = DriverManager.getConnection(url, "harryharry6", "harry");
         } catch (SQLException e) {
-            System.out.println("An SQLException occurred while trying to connect to the database, the plugin will run in API only mode.");
             e.printStackTrace();
             return false;
         }

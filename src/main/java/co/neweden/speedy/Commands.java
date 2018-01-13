@@ -10,11 +10,34 @@ import java.sql.Statement;
 
 import static co.neweden.speedy.Connection.db;
 
-public class Coms extends ListenerAdapter {
+public class Commands extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         String message = event.getMessage().getContent();
         String rank = event.getMember().getRoles().toString();
         String author = event.getAuthor().getName();
+
+        if (!message.startsWith(">b ")) return;
+
+        if (!rank.contains("Senior")) {
+            event.getTextChannel().sendMessage("```diff\n- Error : You must be senior or higher to execute this command\n```").queue();
+            return;
+        }
+
+        if (message.startsWith(">b wwt")) {
+            wwtCommand(event, message);
+            return;
+        }
+
+        if (message.startsWith(">b add ")) {
+            addCommand(event, message, rank);
+            return;
+        }
+
+        if (message.startsWith(">b remove ")) {
+            removeCommand(event, message);
+            return;
+        }
+
     }
 
     private void wwtCommand(MessageReceivedEvent event, String message) {
@@ -77,31 +100,6 @@ public class Coms extends ListenerAdapter {
             System.out.println("There was an error with MYSQL - >b remove");
             System.out.println(e);
             event.getTextChannel().sendMessage("``` Factoid has not been removed : error: " + e + "```");
-        }
-
-    }
-
-    private void checker(MessageReceivedEvent event, String message, String rank) {
-        if (!message.startsWith(">b ")) return;
-
-        if (!rank.contains("Senior")) {
-            event.getTextChannel().sendMessage("```diff\n- Error : You must be senior or higher to execute this command\n```").queue();
-            return;
-        }
-
-        if (message.startsWith(">b wwt")) {
-            wwtCommand(event);
-            return;
-        }
-
-        if (message.startsWith(">b add ")) {
-            addCommand(event);
-            return;
-        }
-
-        if (message.startsWith(">b remove ")) {
-            removeCommand(event);
-            return;
         }
 
     }
