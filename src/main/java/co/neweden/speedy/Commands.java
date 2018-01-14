@@ -42,7 +42,7 @@ public class Commands extends ListenerAdapter {
 
     private void wwtCommand(MessageReceivedEvent event) {
         Factoid f = mcmessages.getLastFactoid();
-        String info = "```md\n" + "[ID] " + f.getID() + " | [Factoid] " + f.getFactoid() + " | [Type] " + f.getMessageType() + "  | [Response] " + f.getResponse() + "  | [Author] " + f.getAuthor() + "\n```";
+        String info = "```md\n" + "[ID] " + f.getID() + " | [Factoid] " + f.getFactoid() + " | [Type] " + f.getMessageType() + " | [Response] " + f.getResponse() + " | [Author] " + f.getAuthor() + "\n```";
         event.getTextChannel().sendMessage(info).queue();
     }
 

@@ -24,7 +24,6 @@ public class mcmessages extends ListenerAdapter {
         String name = event.getAuthor().getName();
 
 
-
         //Checker if mc server is talking
         if (event.getJDA().getSelfUser().equals(event.getAuthor())) return;
         if (nickname.startsWith("[MC] ") && nickname.length() >= 5) {
@@ -32,9 +31,16 @@ public class mcmessages extends ListenerAdapter {
         }
         //Checking the factoid and putting in a response
         Factoid factoid = getRandomFactoid(message);
-        if(factoid == null) return;
-        event.getTextChannel().sendMessage(factoid.getResponse()).queue();
+        if (factoid == null) return;
+        if (factoid.getMessageType().toString() == "reply") {
+            event.getTextChannel().sendMessage(factoid.getResponse()).queue();
+        }
+        if (factoid.getMessageType().toString() == "action") {
+
+            event.getTextChannel().sendMessage("_`" + factoid.getResponse() + "`_").queue();
+        }
     }
+
 
     public static Factoid getRandomFactoid(String message) {
         List<Factoid> responses = getFactoids(message);
