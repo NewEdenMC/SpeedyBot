@@ -58,6 +58,7 @@ public class Connection {
                     "CREATE TABLE IF NOT EXISTS `factoids` (\n" +
                     "            `id` INT NOT NULL AUTO_INCREMENT,\n" +
                     "  `factoid` VARCHAR(140) NOT NULL,\n" +
+                    "  `type` VARCHAR(140) NOT NULL,\n" +
                     "  `response` VARCHAR(140) NOT NULL,\n" +
                     "  `author` VARCHAR(70) NOT NULL,\n" +
                     "    PRIMARY KEY (`id`));");

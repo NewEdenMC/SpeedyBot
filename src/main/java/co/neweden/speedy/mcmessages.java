@@ -47,6 +47,7 @@ public class mcmessages extends ListenerAdapter {
                 ResultSet rs = st.executeQuery();
                 while (rs.next()) {
                     responses.add(rs.getString("response"));
+
                     previousId.str = rs.getInt("id");
                 }
             } catch (SQLException e) {

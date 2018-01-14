@@ -24,12 +24,12 @@ public class Commands extends ListenerAdapter {
         }
 
         if (message.startsWith(">b wwt")) {
-            wwtCommand(event, message);
+            wwtCommand(event);
             return;
         }
 
         if (message.startsWith(">b add ")) {
-            addCommand(event, message, rank);
+            addCommand(event, message, author);
             return;
         }
 
@@ -40,7 +40,7 @@ public class Commands extends ListenerAdapter {
 
     }
 
-    private void wwtCommand(MessageReceivedEvent event, String message) {
+    private void wwtCommand(MessageReceivedEvent event) {
         try {
             PreparedStatement allst = db.prepareStatement("SELECT * FROM factoids WHERE id=?");
             allst.setInt(1, mcmessages.previousId.str);
@@ -48,13 +48,13 @@ public class Commands extends ListenerAdapter {
             while (rs.next()) {
                 String Ffactoid = rs.getString("factoid");
                 Integer Fid = rs.getInt("id");
+                String Ftype = rs.getString("type");
                 String Fresponse = rs.getString("response");
                 String Fauthor = rs.getString("author");
-                String factoids = "```md\n" + "[ID] " + Fid + " | [Factoid] " + Ffactoid + "  | [Response] " + Fresponse + "  | [Author] " + Fauthor + "\n```";
+                String factoids = "```md\n" + "[ID] " + Fid + " | [Factoid] " + Ffactoid + " | [Type] " + Ftype + "  | [Response] " + Fresponse + "  | [Author] " + Fauthor + "\n```";
                 event.getTextChannel().sendMessage(factoids).queue();
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             System.out.println("There was an error with MySQL - >b wwt");
             System.out.println(e);
         }
@@ -63,25 +63,41 @@ public class Commands extends ListenerAdapter {
 
     private void addCommand(MessageReceivedEvent event, String message, String author) {
         message = message.substring(7, message.length());
-        String[] parts = message.split(" <> ", 2);
-        String AddFactoid = parts[0];
-        String AddResponse = parts[1];
+        String AddFactoid = "";
+        String AddResponse = "";
+        String Addtype = "";
+        if (message.contains("<reply>") || message.contains("<action>")) {
+            if (message.contains("<reply>")) {
+                String[] parts = message.split(" <reply> ", 2);
+                AddFactoid = parts[0];
+                AddResponse = parts[1];
+                Addtype = "reply";
+            }
+            if (message.contains("<action>")) {
+                String[] parts = message.split(" <action> ", 2);
+                AddFactoid = parts[0];
+                AddResponse = parts[1];
+                Addtype = "action";
+            }
+        }
+        else {
+            event.getTextChannel().sendMessage("```Factoid failed to be added. Error: Invalid Arguments```").queue();
+            return;
+        }
 
-
-        //Adding to the database
         try {
-            PreparedStatement st = db.prepareStatement("INSERT INTO `factoids` (`factoid`, `response`, `author`) VALUES (?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement st = db.prepareStatement("INSERT INTO `factoids` (`factoid`,`type`, `response`, `author`) VALUES (?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
             st.setString(1, AddFactoid);
-            st.setString(2, AddResponse);
-            st.setString(3, author);
+            st.setString(2, Addtype);
+            st.setString(3, AddResponse);
+            st.setString(4, author);
             st.executeUpdate();
-            System.out.println("the following string were added to the database: " + AddFactoid + " | " + AddResponse + " | " +  author);
+            System.out.println("the following string were added to the database: " + AddFactoid + " | " + AddResponse + " | " + author);
             ResultSet genkeys = st.getGeneratedKeys();
             genkeys.next();
             Integer AddId = genkeys.getInt(1);
             event.getTextChannel().sendMessage("```Factoid has been successfully added with the ID: " + AddId + "```").queue();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             System.out.println("There was an error with MySQL - >b add");
             System.out.println(e);
             event.getTextChannel().sendMessage("``` Factoid has not been added : error: " + e + "```").queue();
