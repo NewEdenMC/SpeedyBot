@@ -41,24 +41,9 @@ public class Commands extends ListenerAdapter {
     }
 
     private void wwtCommand(MessageReceivedEvent event) {
-        try {
-            PreparedStatement allst = db.prepareStatement("SELECT * FROM factoids WHERE id=?");
-            allst.setInt(1, mcmessages.previousId.str);
-            ResultSet rs = allst.executeQuery();
-            while (rs.next()) {
-                String Ffactoid = rs.getString("factoid");
-                Integer Fid = rs.getInt("id");
-                String Ftype = rs.getString("type");
-                String Fresponse = rs.getString("response");
-                String Fauthor = rs.getString("author");
-                String factoids = "```md\n" + "[ID] " + Fid + " | [Factoid] " + Ffactoid + " | [Type] " + Ftype + "  | [Response] " + Fresponse + "  | [Author] " + Fauthor + "\n```";
-                event.getTextChannel().sendMessage(factoids).queue();
-            }
-        } catch (SQLException e) {
-            System.out.println("There was an error with MySQL - >b wwt");
-            System.out.println(e);
-        }
-
+        Factoid f = mcmessages.getLastFactoid();
+        String info = "```md\n" + "[ID] " + f.getID() + " | [Factoid] " + f.getFactoid() + " | [Type] " + f.getMessageType() + "  | [Response] " + f.getResponse() + "  | [Author] " + f.getAuthor() + "\n```";
+        event.getTextChannel().sendMessage(info).queue();
     }
 
     private void addCommand(MessageReceivedEvent event, String message, String author) {

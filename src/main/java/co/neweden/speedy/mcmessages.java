@@ -15,9 +15,7 @@ import static co.neweden.speedy.Connection.db;
 
 public class mcmessages extends ListenerAdapter {
 
-    static public class previousId {
-        static Integer str = 0;
-    }
+    private static Factoid lastFactoid;
 
     public void onMessageReceived(MessageReceivedEvent event) {
         //Message and nickname grab from discord
@@ -31,40 +29,47 @@ public class mcmessages extends ListenerAdapter {
         if (event.getJDA().getSelfUser().equals(event.getAuthor())) return;
         if (nickname.startsWith("[MC] ") && nickname.length() >= 5) {
             nickname = nickname.substring(5, nickname.length());
-
         }
         //Checking the factoid and putting in a response
-        String response = getRandomResponse(message);
-        if(response == null) return;
-        event.getTextChannel().sendMessage(response).queue();
+        Factoid factoid = getRandomFactoid(message);
+        if(factoid == null) return;
+        event.getTextChannel().sendMessage(factoid.getResponse()).queue();
     }
-        public static List<String> getResponses (String factoid){
-            factoid = factoid.toLowerCase();
-            List<String> responses = new ArrayList<>();
-            try {
-                PreparedStatement st = db.prepareStatement("SELECT response, id FROM factoids WHERE factoid=?");
-                st.setString(1, factoid);
-                ResultSet rs = st.executeQuery();
-                while (rs.next()) {
-                    responses.add(rs.getString("response"));
 
-                    previousId.str = rs.getInt("id");
-                }
-            } catch (SQLException e) {
-                System.out.println("There was an error with MySQL with mcmessages");
-            }
-            return responses;
-        }
-
-    public static String getRandomResponse(String message) {
-        List<String> responses = getResponses(message);
+    public static Factoid getRandomFactoid(String message) {
+        List<Factoid> responses = getFactoids(message);
         if (responses.size() <= 0) return null;
 
         int randomNum = 0;
         if (responses.size() > 1)
             randomNum = ThreadLocalRandom.current().nextInt(0, responses.size());
 
-        return responses.get(randomNum);
+        lastFactoid = responses.get(randomNum);
+        return lastFactoid;
+    }
+
+    public static Factoid getLastFactoid() { return lastFactoid; }
+
+    public static List<Factoid> getFactoids(String factoid) {
+        factoid = factoid.toLowerCase();
+        List<Factoid> responses = new ArrayList<>();
+        try {
+            PreparedStatement st = db.prepareStatement("SELECT * FROM factoids WHERE factoid=?");
+            st.setString(1, factoid);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                Factoid f = new Factoid();
+                f.id = rs.getInt("id");
+                f.factoid = rs.getString("factoid");
+                f.type = MessageType.valueOf(rs.getString("type"));;
+                f.response = rs.getString("response");
+                f.author = rs.getString("author");
+                responses.add(f);
+            }
+        } catch (SQLException e) {
+            System.out.println("There was an error with MySQL with mcmessages");
+        }
+        return responses;
     }
 
 }
